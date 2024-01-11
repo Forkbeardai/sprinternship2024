@@ -56,7 +56,7 @@ class RegexGenerator:
                 except IOError as e:
                     print(f"Error writing to the file: {e}")
 
-
+#a
 #create a class for this perhaps
 def create_table_and_load_data(file_path, tablename, connection):
     data = []
