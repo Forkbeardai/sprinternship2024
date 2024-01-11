@@ -7,8 +7,7 @@ class RegexGenerator:
         self.regex_count = regex_count
 
     def generate_data(self):
-        for regex, count in self.regex_count_pairs:
-            print(f"Generating {count} data items for regex: {regex}")
+        for regex, count in self.regex_count:
             for i in range(count):
                 generated_data = exrex.getone(regex)
                 print(generated_data)
@@ -16,7 +15,7 @@ class RegexGenerator:
 class CommandLineParser:
     def __init__(self):
         self.parser = argparse.ArgumentParser(description = 'Generate data based on a given regular expression.')
-        self.parser.add_argument('regex_count', nargs = '+', type = lambda s: s.split(':'), help = 'List of regex:count pairs, each separated by space')
+        self.parser.add_argument('regex_count', nargs = '+', type = lambda s: s.split(':'), help = 'List of regex:count pairs, each pair separated by space and each surrounded by quotes')
         self.parser.add_argument('--snowflake-user', type = str, default = 'default', help = 'Snowflake username (not required)')
         self.parser.add_argument('--snowflake-password', type = str, default = 'default', help = 'Snowflake password (not required)')
         self.parser.add_argument('--snowflake-account', type = str, default = 'default', help = 'Snowflake account (not required)')
@@ -31,9 +30,9 @@ def main():
     parser = CommandLineParser()
     args = parser.parse_args()
 
-    regex_count_pairs = [(regex, int(count)) for regex, count in args.regex_count_pairs]
+    regex_count = [(regex, int(count)) for regex, count in args.regex_count]
 
-    generator = RegexGenerator(regex_count_pairs)
+    generator = RegexGenerator(regex_count)
     generator.generate_data()
 
 main()
