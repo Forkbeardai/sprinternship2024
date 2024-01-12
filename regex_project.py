@@ -16,19 +16,38 @@ class RegexGenerator:
             database = self.snowflake_config['database'],
             schema = self.snowflake_config['schema']
         )
-
+        
         cursor = connection.cursor()
-
-        cursor.execute(f"CREATE TABLE IF NOT EXISTS {self.snowflake_config['table_name']} (id INTEGER AUTOINCREMENT PRIMARY KEY, name STRING, data STRING)")
+        cursor.execute(f"CREATE TABLE IF NOT EXISTS {self.snowflake_config['table_name']} (id INTEGER AUTOINCREMENT PRIMARY KEY)")
         connection.commit()
 
         for triplet in self.regex_count_name:
             regex, count, *rest = triplet.split(':')
-            name = rest[0] if rest else None #name is optional
+            col_name = rest[0] if rest else None  # name is optional
+
+            # Alter the table to add a new column
+            cursor.execute(f"ALTER TABLE {self.snowflake_config['table_name']} ADD {col_name} STRING")
+            connection.commit()
+
             for i in range(int(count)):
                 generated_data = exrex.getone(regex)
-                cursor.execute(f"INSERT INTO {self.snowflake_config['table_name']} (name, data) VALUES (%s, %s)", (name, generated_data))
+
+                # Check if the row with the specified id exists
+                cursor.execute(f"SELECT 1 FROM {self.snowflake_config['table_name']} WHERE id = %s", (i + 1,)) #return the constant 1 for every row of the table. i + 1 because range starts from 0
+                                                                                                               #determine if current row exist
+                existing_row = cursor.fetchone() #returns a single record or None if no more rows are available
+
+                if existing_row:
+                    # If the row exists, update the existing row
+                    cursor.execute(f"UPDATE {self.snowflake_config['table_name']} SET {col_name} = %s WHERE id = %s", (generated_data, i + 1))
+                else:
+                    # If the row doesn't exist, insert a new row
+                    cursor.execute(f"INSERT INTO {self.snowflake_config['table_name']} (id, {col_name}) VALUES (%s, %s)", (i + 1, generated_data))
+
                 connection.commit()
+
+        cursor.close()
+        connection.close()
 
         cursor.close()
         connection.close()
@@ -51,7 +70,17 @@ class CommandLineParser:
 
 def main():
     parser = CommandLineParser()
-    args = parser.parse_args()
+    args = parser.parse_args() #parse these arguments into an object. Ex: Now args.user outputs my_user
+
+    snowflake_config = {
+        'user': args.user,
+        'password': args.password,
+        'account': args.account,
+        'warehouse': args.warehouse,
+        'database': args.database,
+        'schema': args.schema,
+        'table_name': args.table_name
+    }
 
     snowflake_config = {
         'user': args.user,
