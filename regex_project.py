@@ -6,8 +6,12 @@ class RegexGenerator:
     def __init__(self, regex_count_name, snowflake_config):
         self.regex_count_name = regex_count_name
         self.snowflake_config = snowflake_config
+    
 
     def generate_data(self):
+
+        #data ={} #keys: column name, value: generated value for that column
+
         connection = snowflake.connector.connect(
             user = self.snowflake_config['user'],
             password = self.snowflake_config['password'],
@@ -49,8 +53,6 @@ class RegexGenerator:
         cursor.close()
         connection.close()
 
-        cursor.close()
-        connection.close()
 
 class CommandLineParser:
     # delete defaults later
@@ -71,16 +73,6 @@ class CommandLineParser:
 def main():
     parser = CommandLineParser()
     args = parser.parse_args() #parse these arguments into an object. Ex: Now args.user outputs my_user
-
-    snowflake_config = {
-        'user': args.user,
-        'password': args.password,
-        'account': args.account,
-        'warehouse': args.warehouse,
-        'database': args.database,
-        'schema': args.schema,
-        'table_name': args.table_name
-    }
 
     snowflake_config = {
         'user': args.user,
