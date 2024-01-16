@@ -1,6 +1,7 @@
 import exrex
 import argparse
 import snowflake.connector
+import getpass
 
 class SnowflakeConnector:
     def __init__(self, snowflake_config):
@@ -65,7 +66,7 @@ class CommandLineParser:
     def __init__(self):
         self.parser = argparse.ArgumentParser(description='Generate data based on a given regular expression.')
         self.parser.add_argument('--user', type=str, help='Snowflake username (required)')
-        self.parser.add_argument('--password', type=str, help='Snowflake password (required)')
+        self.parser.add_argument('--password', type=str, default='default_password', help='Snowflake password (optional)') #password is optional, if not entered, later wll be asked by the scanner
         self.parser.add_argument('--account', type=str, help='Snowflake account (required)')
         self.parser.add_argument('--warehouse', type=str, help='Snowflake warehouse (required)')
         self.parser.add_argument('--database', type=str, help='Snowflake database (required)')
@@ -75,7 +76,14 @@ class CommandLineParser:
                                  help='List of regex:count:name, separated by space and each surrounded by quotes')
 
     def parse_args(self):
-        return self.parser.parse_args()
+        args = self.parser.parse_args()
+
+        # Check if the provided password matches the default value
+        if args.password == 'default_password':
+            # Use a secure method to get the user's password
+            args.password = getpass.getpass('Enter your Snowflake password(hidden): ')
+
+        return args
 
 def main():
     parser = CommandLineParser()
