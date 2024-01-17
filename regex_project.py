@@ -33,7 +33,7 @@ class DataGenerator:
             generated_data = [exrex.getone(regex) for _ in range(int(self.count))]
             data.append(generated_data)
 
-        
+
         return data
 
 
@@ -119,19 +119,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
