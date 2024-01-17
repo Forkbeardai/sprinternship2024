@@ -30,14 +30,10 @@ class DataGenerator:
     def generate_data(self):
         data = []
         for regex in self.regexes:
-            print(f"Regex is:{regex}, Count is {self.count}")
             generated_data = [exrex.getone(regex) for _ in range(int(self.count))]
             data.append(generated_data)
 
-        # Print the generated data
-        for i, generated_data_list in enumerate(data):
-            print(f"Generated data for regex {i + 1}: {generated_data_list}")
-
+        
         return data
 
 
