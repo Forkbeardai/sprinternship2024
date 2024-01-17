@@ -22,59 +22,65 @@ class SnowflakeConnector:
         if self.connection:
             self.connection.close()
 
-class RegexGenerator:
-    def __init__(self, regex_count_name, snowflake_connector):
-        self.regex_count_name = regex_count_name
-        self.snowflake_connector = snowflake_connector
+class DataGenerator:
+    def __init__(self, regexes, count):
+        self.regexes = regexes
+        self.count = count
 
     def generate_data(self):
+        data = []
+        for regex in self.regexes:
+            print(f"Regex is:{regex}, Count is {self.count}")
+            generated_data = [exrex.getone(regex) for _ in range(int(self.count))]
+            data.append(generated_data)
+
+        # Print the generated data
+        for i, generated_data_list in enumerate(data):
+            print(f"Generated data for regex {i + 1}: {generated_data_list}")
+
+        return data
+
+
+class SnowflakeOperations:
+    def __init__(self, snowflake_connector, table_name, column_names):
+        self.snowflake_connector = snowflake_connector
+        self.table_name = table_name
+        self.column_names = column_names
+
+    def create_table(self):
         connection = self.snowflake_connector.connection
-        snowflake_config = self.snowflake_connector.snowflake_config
-
         cursor = connection.cursor()
-        
-        cursor.execute(f"CREATE TABLE IF NOT EXISTS {snowflake_config['table_name']} (id INTEGER AUTOINCREMENT PRIMARY KEY)")
+        cursor.execute(f"CREATE TABLE IF NOT EXISTS {self.table_name} (id INTEGER AUTOINCREMENT PRIMARY KEY)")
+        for col_name in self.column_names:
+            cursor.execute(f"ALTER TABLE {self.table_name} ADD {col_name} STRING")
         connection.commit()
-
-        for triplet in self.regex_count_name:
-            regex, count, *rest = triplet.split(':')
-            col_name = rest[0] if rest else None
-
-            # Alter the table to add a new column
-            cursor.execute(f"ALTER TABLE {snowflake_config['table_name']} ADD {col_name} STRING")
-            connection.commit()
-
-            for i in range(int(count)):
-                generated_data = exrex.getone(regex)
-
-                # Check if the row with the specified id exists
-                cursor.execute(f"SELECT 1 FROM {snowflake_config['table_name']} WHERE id = %s", (i + 1,))
-                existing_row = cursor.fetchone()
-
-                if existing_row:
-                    # If the row exists, update the existing row
-                    cursor.execute(f"UPDATE {snowflake_config['table_name']} SET {col_name} = %s WHERE id = %s", (generated_data, i + 1))
-                else:
-                    # If the row doesn't exist, insert a new row
-                    cursor.execute(f"INSERT INTO {snowflake_config['table_name']} (id, {col_name}) VALUES (%s, %s)", (i + 1, generated_data))
-
-                connection.commit()
-
         cursor.close()
+
+    def insert_data(self, data):
+        connection = self.snowflake_connector.connection
+        cursor = connection.cursor()
+        for i, row_data in enumerate(zip(*data)):
+            columns = ', '.join(self.column_names)
+            placeholders = ', '.join(['%s' for _ in self.column_names])
+            cursor.execute(f"INSERT INTO {self.table_name} (id, {columns}) VALUES (%s, {placeholders})", (i + 1, *row_data))
+        connection.commit()
+        cursor.close()
+
 
 class CommandLineParser:
     def __init__(self):
         self.parser = argparse.ArgumentParser(description='Generate data based on a given regular expression.')
-        self.parser.add_argument('--user', type=str, help='Snowflake username (required)')
-        self.parser.add_argument('--password', type=str, default='default_password', help='Snowflake password (optional)') #password is optional, if not entered, later wll be asked by the scanner
-        self.parser.add_argument('--account', type=str, help='Snowflake account (required)')
-        self.parser.add_argument('--warehouse', type=str, help='Snowflake warehouse (required)')
-        self.parser.add_argument('--database', type=str, help='Snowflake database (required)')
-        self.parser.add_argument('--schema', type=str, help='Snowflake schema (required)')
-        self.parser.add_argument('--table_name', type=str, help='Snowflake table name (required)')
-        self.parser.add_argument('--regex_count_name', nargs='+', type=str,
-                                 help='List of regex:count:name, separated by space and each surrounded by quotes')
-
+        self.parser.add_argument('-u', '--user', type=str, required=True, help ='Snowflake username')
+        self.parser.add_argument('-p', '--password', type=str, default='default_password', help='Snowflake password (optional)')
+        self.parser.add_argument('-a', '--account', type=str, required=True, help='Snowflake account')
+        self.parser.add_argument('-w', '--warehouse', type=str, required=True, help='Snowflake warehouse')
+        self.parser.add_argument('-d', '--database', type=str, required=True, help='Snowflake database')
+        self.parser.add_argument('-s', '--schema', type=str, required=True, help='Snowflake schema')
+        self.parser.add_argument('-t', '--table_name', type=str, required=True, help='Snowflake table name')
+        self.parser.add_argument('-c', '--count', type=str, help='Amount of data to be generated for each regex')
+        self.parser.add_argument('-r', '--regex', type=str, action='append', help='Regex')
+        self.parser.add_argument('-n', '--column_name', type=str, action='append', help='Column name for corresponding regex')
+        
     def parse_args(self):
         args = self.parser.parse_args()
 
@@ -84,6 +90,7 @@ class CommandLineParser:
             args.password = getpass.getpass('Enter your Snowflake password(hidden): ')
 
         return args
+
 
 def main():
     parser = CommandLineParser()
@@ -99,14 +106,36 @@ def main():
         'table_name': args.table_name
     }
 
-    snowflake_connector = SnowflakeConnector(snowflake_config)
-    snowflake_connector.connect()
+    try:
+        snowflake_connector = SnowflakeConnector(snowflake_config)
+        snowflake_connector.connect()
 
-    regex_count_name = args.regex_count_name
+        data_generator = DataGenerator(args.regex, args.count)
+        generated_data = data_generator.generate_data()
 
-    generator = RegexGenerator(regex_count_name, snowflake_connector)
-    generator.generate_data()
+        snowflake_operations = SnowflakeOperations(snowflake_connector, args.table_name, args.column_name)
+        snowflake_operations.create_table()
+        snowflake_operations.insert_data(generated_data)
+    except Exception as e:
+        print(f"An error occurred: {e}")
+    finally:
+        snowflake_connector.close()
 
-    snowflake_connector.close()
+if __name__ == "__main__":
+    main()
 
-main()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
