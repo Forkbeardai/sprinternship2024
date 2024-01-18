@@ -79,7 +79,6 @@ class SnowflakeOperations:
 
         #Transpose data to get rows
         rows = list(zip_longest(*data, fillvalue=None))
-        #print(f"rows is {rows}")
 
         total_rows = len(rows)
         for start in range(0, total_rows, batch_size):
