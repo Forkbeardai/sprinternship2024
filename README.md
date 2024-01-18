@@ -25,15 +25,17 @@ The Snowflake Regex Generator is a Python program designed to generate useful da
 
 ## Usage
 ### Run the script from the command line with the necessary arguments:
-python3 regex_project.py -u <user> -p <password> -a <account> -w <warehouse> -d <database> -s <schema> -t <table_name> -c <count> -r <regex> -n <column_name>
+`python3 regex_project.py -u <user> -p <password> -a <account> -w <warehouse> -d <database> -s <schema> -t <table_name> -c <count> -r <regex> -n <column_name>`
 ### Arguments
-**-u, --user**: Snowflake username.
-**-p, --password**: Snowflake password.
-**-a, --account**: Snowflake account.
-**-w, --warehouse**: Snowflake warehouse.
-**-d, --database**: Snowflake database.
-**-s, --schema**: Snowflake schema.
-**-t, --table_name**: Name of the Snowflake table.
-**-c, --count**: Number of data rows to generate for each regex pattern.
-**-r, --regex**: Regular expression pattern for data generation (multiple allowed).
-**-n, --column_name**: Column name in the Snowflake table for the corresponding regex(multiple allowed) 
+1. **-u, --user**: Snowflake username.
+2. **-p, --password**: Snowflake password.
+3. **-a, --account**: Snowflake account.
+4. **-w, --warehouse**: Snowflake warehouse.
+5. **-d, --database**: Snowflake database.
+6. **-s, --schema**: Snowflake schema.
+7. **-t, --table_name**: Name of the Snowflake table.
+8. **-c, --count**: Number of data rows to generate for each regex pattern.
+9. **-r, --regex**: Regular expression pattern for data generation (multiple allowed).
+10. **-n, --column_name**: Column name in the Snowflake table for the corresponding regex(multiple allowed) 
+### Example
+python3 regex_project.py -u username -p password -a immuta.us-east-1 -w dev_wh -d sprintern -s example -t my_table -c 100 -r "[A-Z]{5}" -c letters -r "\d{3}" -c digits
