@@ -14,7 +14,7 @@ The Snowflake Regex Generator is a Python program designed to generate useful da
 3. Python libraries: **`snowflake-connector-python`, `exrex`,`argparse`, `getpass`**
 
 ## Installation
-**pip3 install snowflake-connector-python exrex argparse**
+`pip3 install snowflake-connector-python exrex argparse`
 
 ## Configuration
 ### Configure the script with your Snowflake credentials and target table details. The following parameters are required:
@@ -38,4 +38,11 @@ The Snowflake Regex Generator is a Python program designed to generate useful da
 9. **-r, --regex**: Regular expression pattern for data generation (multiple allowed).
 10. **-n, --column_name**: Column name in the Snowflake table for the corresponding regex(multiple allowed) 
 ### Example
-python3 regex_project.py -u username -p password -a immuta.us-east-1 -w dev_wh -d sprintern -s example -t my_table -c 100 -r "[A-Z]{5}" -c letters -r "\d{3}" -c digits
+`python3 regex_project.py -u username -p password -a immuta.us-east-1 -w dev_wh -d sprintern -s example -t my_table -c 100 -r "[A-Z]{5}" -c letters -r "\d{3}" -c digits`
+
+## Contact
+> Jamie Zheng github: jamielinzheng email: Igotanicejam@gmail.com
+> Aditri Gadigi github: aditrigadigi email: adi3.gadigi@gmail.com
+> Emily Qiyu An github:emilyqiyuan email:emilyqiyuan@gmail.com
+> Yahleel Raya github: YahleelRaya email: yahleelxo100@gmail.com
+
