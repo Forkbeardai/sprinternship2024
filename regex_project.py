@@ -116,11 +116,7 @@ class CommandLineParser:
         self.parser.add_argument('-c', '--count', type = str, help = 'Amount of data to be generated for each regex')
         self.parser.add_argument('-r', '--regex', type = str, action = 'append', help = 'Regex')
         self.parser.add_argument('-n', '--column_name', type = str, action = 'append', help = 'Column name for corresponding regex')
-        self.parser.add_argument('-n', '--column_name', type=str, action='append', help='Column name for corresponding regex')
-        self.parser.add_argument('-i', '--invalid_regexes', type=str, action='append', help='Invalid regex for corresponding regex')
-        self.parser.add_argument('-pct', '--invalid_data_percentages', type=str, action='append', help='Invalid data percentage for corresponding regex')
-
-
+        
     def parse_args(self):
         args = self.parser.parse_args()
         if args.password == 'default':
@@ -152,11 +148,12 @@ def main():
         snowflake_operations = SnowflakeOperations(snowflake_connector, args.table_name, args.column_name)
         snowflake_operations.create_table()
 
-        # Using batch insert
-        snowflake_operations.insert_data_in_batches(generated_data, batch_size=100)  # You can adjust the batch size
-
+        #batch insert
+        snowflake_operations.insert_data_in_batches(generated_data, batch_size=100)  # batch size can be changed here
+    
     except Exception as e:
         print(f"An error occurred: {e}")
+    
     finally:
         snowflake_connector.close()
 
