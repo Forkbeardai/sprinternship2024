@@ -41,8 +41,8 @@ The Snowflake Regex Generator is a Python program designed to generate useful da
 `python3 regex_project.py -u username -p password -a immuta.us-east-1 -w dev_wh -d sprintern -s example -t my_table -c 100 -r "[A-Z]{5}" -c letters -r "\d{3}" -c digits`
 
 ## Contact
-> Jamie Zheng github: jamielinzheng email: Igotanicejam@gmail.com
-> Aditri Gadigi github: aditrigadigi email: adi3.gadigi@gmail.com
-> Emily Qiyu An github:emilyqiyuan email:emilyqiyuan@gmail.com
-> Yahleel Raya github: YahleelRaya email: yahleelxo100@gmail.com
+<br> Jamie Zheng github: jamielinzheng email: Igotanicejam@gmail.com </br>
+<br> Aditri Gadigi github: aditrigadigi email: adi3.gadigi@gmail.com </br>
+<br> Emily Qiyu An github: emilyqiyuan email:emilyqiyuan@gmail.com </br>
+<br> Yahleel Raya github: YahleelRaya email: yahleelxo100@gmail.com </br>
 
