@@ -14,12 +14,12 @@ class SnowflakeConnector:
 
     def connect(self):
         self.connection = snowflake.connector.connect(
-            user=self.snowflake_config['user'],
-            password=self.snowflake_config['password'],
-            account=self.snowflake_config['account'],
-            warehouse=self.snowflake_config['warehouse'],
-            database=self.snowflake_config['database'],
-            schema=self.snowflake_config['schema']
+            user  = self.snowflake_config['user'],
+            password = self.snowflake_config['password'],
+            account = self.snowflake_config['account'],
+            warehouse = self.snowflake_config['warehouse'],
+            database = self.snowflake_config['database'],
+            schema = self.snowflake_config['schema']
         )
 
     def close(self):
@@ -41,15 +41,15 @@ class DataGenerator:
             invalid_count = int(int(self.count) * float(invalid_percentage) / 100)
 
             print(f"num of valid count is {valid_count}, num of invalid count is {invalid_count}")
-            # Generate valid data
+            #Generate valid data
             valid_data = [exrex.getone(regex) for _ in range(valid_count)]
 
             if invalid_count > 0:
-                # Generate invalid data if requested
+                #Generate invalid data if requested
                 invalid_data = [exrex.getone(invalid_regex) for _ in range(invalid_count)]
                 valid_data.extend(invalid_data)
 
-              # Shuffle the data
+              #Shuffle the data
             random.shuffle(valid_data)
 
             data.append(valid_data)
@@ -77,7 +77,7 @@ class SnowflakeOperations:
         connection = self.snowflake_connector.connection
         cursor = connection.cursor()
 
-        # Transpose data to get rows
+        #Transpose data to get rows
         rows = list(zip_longest(*data, fillvalue=None))
         #print(f"rows is {rows}")
 
@@ -86,16 +86,16 @@ class SnowflakeOperations:
             end = min(start + batch_size, total_rows)
             batch = rows[start:end]
 
-            # Preparing the SQL statement for batch insertion
+            #Preparing the SQL statement for batch insertion
             columns = ', '.join(self.column_names)
             placeholders = ', '.join(['%s' for _ in self.column_names])
             values_placeholder = ', '.join([f"({placeholders})" for _ in batch])
             sql = f"INSERT INTO {self.table_name} ({columns}) VALUES {values_placeholder}"
 
-            # Flatten the batch list of tuples for execution
+            #Flatten the batch list of tuples for execution
             flattened_values = [item for sublist in batch for item in sublist]
 
-            # Execute the SQL statement
+            #Execute the SQL statement
             cursor.execute(sql, flattened_values)
 
         connection.commit()
@@ -103,29 +103,25 @@ class SnowflakeOperations:
 
 class CommandLineParser:
     def __init__(self):
-        self.parser = argparse.ArgumentParser(description='Generate data based on a given regular expression.')
-        self.parser.add_argument('-u', '--user', type=str, required=True, help ='Snowflake username')
-        self.parser.add_argument('-p', '--password', type=str, default='default_password', help='Snowflake password (optional)')
-        self.parser.add_argument('-a', '--account', type=str, required=True, help='Snowflake account')
-        self.parser.add_argument('-w', '--warehouse', type=str, required=True, help='Snowflake warehouse')
-        self.parser.add_argument('-d', '--database', type=str, required=True, help='Snowflake database')
-        self.parser.add_argument('-s', '--schema', type=str, required=True, help='Snowflake schema')
-        self.parser.add_argument('-t', '--table_name', type=str, required=True, help='Snowflake table name')
-        self.parser.add_argument('-c', '--count', type=str, help='Amount of data to be generated for each regex')
-        self.parser.add_argument('-r', '--regex', type=str, action='append', help='Regex')
-        self.parser.add_argument('-n', '--column_name', type=str, action='append', help='Column name for corresponding regex')
-        self.parser.add_argument('-i', '--invalid_regexes', type=str, action='append', help='Invalid regex for corresponding regex')
-        self.parser.add_argument('-pct', '--invalid_data_percentages', type=str, action='append', help='Invalid data percentage for corresponding regex')
+        self.parser = argparse.ArgumentParser(description = 'Generate data based on a given regular expression.')
+        self.parser.add_argument('-u', '--user', type = str, required = True, help = 'Snowflake username')
+        self.parser.add_argument('-p', '--password', type = str, default = 'default', help = 'Snowflake password (optional)')
+        self.parser.add_argument('-a', '--account', type = str, required = True, help = 'Snowflake account')
+        self.parser.add_argument('-w', '--warehouse', type = str, required = True, help = 'Snowflake warehouse')
+        self.parser.add_argument('-d', '--database', type = str, required = True, help = 'Snowflake database')
+        self.parser.add_argument('-s', '--schema', type = str, required = True, help = 'Snowflake schema')
+        self.parser.add_argument('-t', '--table_name', type = str, required = True, help = 'Snowflake table name')
+        self.parser.add_argument('-c', '--count', type = str, help = 'Amount of data to be generated for each regex')
+        self.parser.add_argument('-r', '--regex', type = str, action = 'append', help = 'Regex')
+        self.parser.add_argument('-n', '--column_name', type = str, action = 'append', help = 'Column name for corresponding regex')
+        self.parser.add_argument('-i', '--invalid_regexes', type = str, action = 'append', help = 'Invalid regex for corresponding regex')
+        self.parser.add_argument('-pct', '--invalid_data_percentages', type = str, action = 'append', help = 'Invalid data percentage for corresponding regex')
 
 
     def parse_args(self):
         args = self.parser.parse_args()
-
-        # Check if the provided password matches the default value
-        if args.password == 'default_password':
-            # Use a secure method to get the user's password
+        if args.password == 'default':
             args.password = getpass.getpass('Enter your Snowflake password(hidden): ')
-
         return args
 
 
