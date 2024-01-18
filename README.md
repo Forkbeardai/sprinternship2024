@@ -28,7 +28,7 @@ The Snowflake Regex Generator is a Python program designed to generate useful da
 `python3 regex_project.py -u <user> -p <password> -a <account> -w <warehouse> -d <database> -s <schema> -t <table_name> -c <count> -r <regex> -n <column_name>`
 ### Arguments
 1. **-u, --user**: Snowflake username.
-2. **-p, --password**: Snowflake password.
+2. **-p, --password**: Snowflake password.(If you don't enter a password argument, you will be prompted to enter it hidden)
 3. **-a, --account**: Snowflake account.
 4. **-w, --warehouse**: Snowflake warehouse.
 5. **-d, --database**: Snowflake database.
@@ -38,11 +38,11 @@ The Snowflake Regex Generator is a Python program designed to generate useful da
 9. **-r, --regex**: Regular expression pattern for data generation (multiple allowed).
 10. **-n, --column_name**: Column name in the Snowflake table for the corresponding regex(multiple allowed) 
 ### Example
-`python3 regex_project.py -u username -p password -a immuta.us-east-1 -w dev_wh -d sprintern -s example -t my_table -c 100 -r "[A-Z]{5}" -c letters -r "\d{3}" -c digits`
+`python3 regex_project.py -u username -p password -a immuta.us-east-1 -w dev_wh -d sprintern -s example -t my_table -c 100 -r "[A-Z]{5}" -n letters -r "\d{3}" -n digits`
 
 ## Contact
 <br> Jamie Zheng github: jamielinzheng email: Igotanicejam@gmail.com </br>
 <br> Aditri Gadigi github: aditrigadigi email: adi3.gadigi@gmail.com </br>
-<br> Emily Qiyu An github: emilyqiyuan email:emilyqiyuan@gmail.com </br>
+<br> Emily Qiyu An github: emilyqiyuan email: emilyqiyuan@gmail.com </br>
 <br> Yahleel Raya github: YahleelRaya email: yahleelxo100@gmail.com </br>
 
