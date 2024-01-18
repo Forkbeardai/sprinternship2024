@@ -32,8 +32,6 @@ class DataGenerator:
         for regex in self.regexes:
             generated_data = [exrex.getone(regex) for _ in range(int(self.count))]
             data.append(generated_data)
-
-
         return data
 
 
@@ -61,7 +59,6 @@ class SnowflakeOperations:
             cursor.execute(f"INSERT INTO {self.table_name} (id, {columns}) VALUES (%s, {placeholders})", (i + 1, *row_data))
         connection.commit()
         cursor.close()
-
 
 class CommandLineParser:
     def __init__(self):
