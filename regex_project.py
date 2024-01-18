@@ -50,13 +50,30 @@ class SnowflakeOperations:
         connection.commit()
         cursor.close()
 
-    def insert_data(self, data):
+    def insert_data_in_batches(self, data, batch_size=100):
         connection = self.snowflake_connector.connection
         cursor = connection.cursor()
-        for i, row_data in enumerate(zip(*data)):
+
+        # Transpose data to get rows
+        rows = list(zip(*data))
+
+        total_rows = len(rows)
+        for start in range(0, total_rows, batch_size):
+            end = min(start + batch_size, total_rows)
+            batch = rows[start:end]
+
+            # Preparing the SQL statement for batch insertion
             columns = ', '.join(self.column_names)
             placeholders = ', '.join(['%s' for _ in self.column_names])
-            cursor.execute(f"INSERT INTO {self.table_name} (id, {columns}) VALUES (%s, {placeholders})", (i + 1, *row_data))
+            values_placeholder = ', '.join([f"({placeholders})" for _ in batch])
+            sql = f"INSERT INTO {self.table_name} ({columns}) VALUES {values_placeholder}"
+
+            # Flatten the batch list of tuples for execution
+            flattened_values = [item for sublist in batch for item in sublist]
+
+            # Execute the SQL statement
+            cursor.execute(sql, flattened_values)
+
         connection.commit()
         cursor.close()
 
@@ -108,7 +125,10 @@ def main():
 
         snowflake_operations = SnowflakeOperations(snowflake_connector, args.table_name, args.column_name)
         snowflake_operations.create_table()
-        snowflake_operations.insert_data(generated_data)
+
+        # Using batch insert
+        snowflake_operations.insert_data_in_batches(generated_data, batch_size=100)  # You can adjust the batch size
+
     except Exception as e:
         print(f"An error occurred: {e}")
     finally:
