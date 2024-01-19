@@ -6,13 +6,14 @@ from itertools import zip_longest
 import random
 
 
-
+# Class for managing Snowflake connection
 class SnowflakeConnector:
     def __init__(self, snowflake_config):
         self.snowflake_config = snowflake_config
         self.connection = None
 
     def connect(self):
+        # Establish a connection to Snowflake using provided configuration
         self.connection = snowflake.connector.connect(
             user  = self.snowflake_config['user'],
             password = self.snowflake_config['password'],
@@ -23,9 +24,14 @@ class SnowflakeConnector:
         )
 
     def close(self):
+        # Close the Snowflake connection if it's open
         if self.connection:
             self.connection.close()
 
+
+
+
+# Class for generating data based on regex patterns
 class DataGenerator:
     def __init__(self, regexes, count, invalid_regexes, invalid_data_percentages):
         self.regexes = regexes
@@ -34,11 +40,11 @@ class DataGenerator:
         self.invalid_data_percentages = invalid_data_percentages
 
     def generate_data(self):
-        data = []
+        data = []  #Initialize an empty list to store generated data for each regex.
 
         for regex, invalid_regex, invalid_percentage in zip(self.regexes, self.invalid_regexes, self.invalid_data_percentages):
             valid_count = int(int(self.count) * (1 - float(invalid_percentage) / 100))
-            invalid_count = int(int(self.count) * float(invalid_percentage) / 100)
+            invalid_count = int(int(self.count) * float(invalid_percentage) / 100) #how many invalid data we should generate
 
             print(f"num of valid count is {valid_count}, num of invalid count is {invalid_count}")
             #Generate valid data
@@ -49,15 +55,16 @@ class DataGenerator:
                 invalid_data = [exrex.getone(invalid_regex) for _ in range(invalid_count)]
                 valid_data.extend(invalid_data)
 
-              #Shuffle the data
+            #Shuffle the data
             random.shuffle(valid_data)
 
             data.append(valid_data)
-
         return data
 
 
 
+
+# Class for Snowflake database operations
 class SnowflakeOperations:
     def __init__(self, snowflake_connector, table_name, column_names):
         self.snowflake_connector = snowflake_connector
@@ -65,6 +72,7 @@ class SnowflakeOperations:
         self.column_names = column_names
 
     def create_table(self):
+        # Create a table in Snowflake with specified columns
         connection = self.snowflake_connector.connection
         cursor = connection.cursor()
         cursor.execute(f"CREATE TABLE IF NOT EXISTS {self.table_name} (id INTEGER AUTOINCREMENT PRIMARY KEY)")
@@ -78,15 +86,14 @@ class SnowflakeOperations:
         cursor = connection.cursor()
 
         #Transpose data to get rows
-        rows = list(zip_longest(*data, fillvalue=None))
-
+        rows = list(zip_longest(*data, fillvalue=None)) #create a list of tuple, [(col1_data1, col2_data1), (cold1_data2, col2_data2)...]
         total_rows = len(rows)
         for start in range(0, total_rows, batch_size):
             end = min(start + batch_size, total_rows)
             batch = rows[start:end]
 
             #Preparing the SQL statement for batch insertion
-            columns = ', '.join(self.column_names)
+            columns = ', '.join(self.column_names)  #Columns are joined into a comma-separated string. ex:assuming column_names = ['column1', 'column2', 'column3'], column = 'column1, column2, column3'
             placeholders = ', '.join(['%s' for _ in self.column_names])
             values_placeholder = ', '.join([f"({placeholders})" for _ in batch])
             sql = f"INSERT INTO {self.table_name} ({columns}) VALUES {values_placeholder}"
@@ -126,7 +133,7 @@ class CommandLineParser:
 
 def main():
     parser = CommandLineParser()
-    args = parser.parse_args()
+    args = parser.parse_args() #parse the command user inputted, now can access the specific data by caling args.xxx
 
     snowflake_config = {
         'user': args.user,
@@ -140,7 +147,7 @@ def main():
 
     try:
         snowflake_connector = SnowflakeConnector(snowflake_config)
-        snowflake_connector.connect()
+        snowflake_connector.connect() #connect to snowflake
 
         data_generator = DataGenerator(args.regex, args.count, args.invalid_regexes, args.invalid_data_percentages)
         generated_data = data_generator.generate_data()
@@ -155,5 +162,6 @@ def main():
         print(f"An error occurred: {e}")
     finally:
         snowflake_connector.close()
+
 if __name__ == "__main__":
     main()
