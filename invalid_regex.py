@@ -6,14 +6,13 @@ import random
 #parse the given regex to different, non-overlapping parts
 def parse_regex(regex):
     pattern = re.compile(r'(\[.*?\]|\\.|{[^{}]+}|.)') #ex:'[0-9]{3}-[A-Za-z]{2}{2,3}' will be parsed into ['[0-9]', '{3}', '-', '[A-Za-z]', '{2}', '{2,3}']
-
     return pattern.findall(regex)
 
 # Function to modify a token with a range, ensure first digit is smaller than second digit
 def modify_token_with_range(token):
-    match = re.match(r'{(\d+),(\d+)}', token)
+    match = re.match(r'{(\d+),(\d+)}', token) #check if the input token matches the expected range format
     if match:
-        first_digit, second_digit = map(int, match.groups())
+        first_digit, second_digit = map(int, match.groups()) #extracts the two digits using group
         new_first_digit = random.randint(0, 9)
         new_second_digit = random.randint(new_first_digit, 9)
         modified_token = token.replace(f'{first_digit},{second_digit}', f'{new_first_digit},{new_second_digit}')
@@ -79,9 +78,8 @@ def modify_token(token):
         '{8}': ['{0}', '{1}', '{2}', '{3}', '{4}', '{5}', '{6}', '{7}', '{9}'],
         '{9}': ['{0}', '{1}', '{2}', '{3}', '{4}', '{5}', '{6}', '{7}', '{8}']
     }
-    
-
     print(f'Token picked: {token}')
+    
     
     # Apply replacements
     if token in replacements:
@@ -94,8 +92,6 @@ def modify_token(token):
 
 # Example regular expression
 original_regex = "^([0123456789]{2}[.][0123456789]{3}[.][\d]{3})$"
-
-# '(\d{2}|1[012]\d)(\.\d{0,20}){0,1})'
 
 # Parse the original regex into tokens
 parsed_tokens = parse_regex(original_regex)
